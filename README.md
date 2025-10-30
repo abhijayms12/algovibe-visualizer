@@ -1,6 +1,6 @@
-# AlgoVibe Visualizer ⚡
+# AlchemiCode ⚗️
 
-An elegant, production-ready React + Vite scaffold for interactive algorithm and data structure visualizations. Optimized for fast iteration during the 2-hour AlgoVibe coding competition.
+An elegant React + Vite app for balancing chemical equations with a vibrant, interactive physical balance and atom visuals. Formerly AlgoVibe Visualizer — now remixed for chemistry.
 
 ## Overview
 
@@ -118,7 +118,7 @@ The runner in `App.jsx` applies these steps sequentially, honoring the speed sli
 
 ## Main Components
 
-- `Navbar` — Title header: "AlgoVibe Visualizer ⚡"
+- `Navbar` — Title header: "AlchemiCode ⚗️"
 - `ControlPanel` — Generate Data, Start, Reset, Algorithm Selector, Speed Slider
 - `VisualizationCanvas` — Animated area where bars/nodes render
 - `ElementBlock` — Reusable unit for bars/nodes with Framer Motion animations
@@ -136,4 +136,4 @@ The runner in `App.jsx` applies these steps sequentially, honoring the speed sli
 
 ## Event
 
-Built for the AlgoVibe 2-hour coding competition — focus on clarity, speed, and extensibility.
+Originally built for the AlgoVibe coding event — now focused on clarity, delight, and science-y vibes.

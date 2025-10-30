@@ -3,9 +3,13 @@ import Navbar from './components/Navbar.jsx'
 import Footer from './components/Footer.jsx'
 import EquationInput from './components/EquationInput.jsx'
 import ExchangeVisualizer from './components/ExchangeVisualizer.jsx'
+import Landing from './components/Landing.jsx'
+import DataStructuresViz from './components/DataStructuresViz.jsx'
 import { parseFormula, compareMaps, evaluateLine } from './algorithms/main.js'
 
 export default function App() {
+  // Always show landing on fresh load; no persistence
+  const [entered, setEntered] = useState(false)
   const [equation, setEquation] = useState('H2,O -> H2O')
   const [error, setError] = useState('')
   const [result, setResult] = useState({
@@ -61,26 +65,41 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <Navbar />
-
-      <main className="flex-1 mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
-        <EquationInput
-          value={equation}
-          onChange={setEquation}
-          onSubmit={handleCompute}
-          error={error}
-        />
-
-        <ExchangeVisualizer
-          leftCounts={result.left}
-          rightCounts={result.right}
-          diffMap={result.diff}
-          missing={result.missing}
-          extra={result.extra}
-        />
-      </main>
-
-      <Footer />
+      {entered ? (
+        <>
+          <Navbar />
+          <main className="flex-1 mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 relative chemistry-bg chemistry-overlay text-zoom-140">
+            <div className="relative z-10 py-4">
+              <div className="mb-4">
+                <h2 className="heading-display text-5xl-hero bg-clip-text text-transparent bg-gradient-to-r from-brand-cyan via-brand-purple to-brand-pink">AlchemiCode</h2>
+              </div>
+              <EquationInput
+                value={equation}
+                onChange={setEquation}
+                onSubmit={handleCompute}
+                error={error}
+              />
+              <ExchangeVisualizer
+                leftCounts={result.left}
+                rightCounts={result.right}
+                diffMap={result.diff}
+                missing={result.missing}
+                extra={result.extra}
+              />
+              <DataStructuresViz
+                leftCounts={result.left}
+                rightCounts={result.right}
+                diffMap={result.diff}
+                missing={result.missing}
+                extra={result.extra}
+              />
+            </div>
+          </main>
+          <Footer />
+        </>
+      ) : (
+        <Landing onEnter={() => setEntered(true)} />
+      )}
     </div>
   )
 }
