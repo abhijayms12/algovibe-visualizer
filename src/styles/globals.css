@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #0f172a;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  @apply bg-background text-slate-100 antialiased;
+}
+
+/* Nice scrollbar for dark mode */
+*::-webkit-scrollbar { height: 10px; width: 10px; }
+*::-webkit-scrollbar-thumb { background-color: rgba(148,163,184,0.35); border-radius: 9999px; }
+*::-webkit-scrollbar-thumb:hover { background-color: rgba(148,163,184,0.55); }
+
+/* Reusable button styles */
+.btn {
+  @apply inline-flex items-center gap-2 rounded-lg px-4 py-2 font-medium transition-colors duration-200 shadow-sm;
+}
+.btn-primary {
+  @apply bg-gradient-to-r from-brand-cyan to-brand-purple text-slate-900 hover:from-brand-purple hover:to-brand-pink;
+}
+.btn-ghost {
+  @apply bg-slate-800/60 text-slate-100 hover:bg-slate-700/70;
+}
+
+.card {
+  @apply rounded-xl bg-slate-900/40 ring-1 ring-white/10 shadow-glow;
+}
