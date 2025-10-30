@@ -3,7 +3,7 @@ import React from 'react'
 export default function Landing({ onEnter }) {
   return (
     <div className="relative min-h-screen chemistry-bg chemistry-overlay">
-      <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 flex items-center justify-center min-h-screen">
+      <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 flex items-center justify-center min-h-screen text-zoom-140">
         <div className="text-center space-y-6">
           <h1 className="heading-display text-5xl-hero bg-clip-text text-transparent bg-gradient-to-r from-brand-yellow via-brand-pink to-brand-cyan drop-shadow">
             AlchemiCode

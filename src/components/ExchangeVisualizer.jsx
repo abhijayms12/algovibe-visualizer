@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react'
+import BalanceScale from './BalanceScale.jsx'
 
 function CountList({ title, counts, diff, side }) {
   const entries = useMemo(() => {
@@ -9,12 +10,12 @@ function CountList({ title, counts, diff, side }) {
 
   return (
     <div className="flex-1">
-      <h3 className="text-sm font-medium text-slate-300 mb-3">{title}</h3>
-      <div className="rounded-lg bg-slate-950/40 ring-1 ring-white/10 p-3 min-h-[14rem]">
+      <h3 className="heading-display text-xl-strong text-slate-200 mb-3">{title}</h3>
+      <div className="rounded-lg bg-slate-950/40 ring-1 ring-white/10 p-4 min-h-[18rem]">
         {entries.length === 0 && (
-          <div className="text-slate-500 text-sm">No elements</div>
+          <div className="text-slate-400 text-xl">No elements</div>
         )}
-        <ul className="space-y-2">
+        <ul className="space-y-3">
           {entries.map((el) => {
             const c = counts?.[el] ?? 0
             const d = diff?.[el] ?? 0
@@ -22,8 +23,8 @@ function CountList({ title, counts, diff, side }) {
             const color = isMismatchOnRhs ? 'text-red-400' : 'text-slate-200'
             return (
               <li key={el} className="flex items-center justify-between gap-3">
-                <span className="text-slate-400">{el}</span>
-                <span className={`font-mono ${color}`}>{c}</span>
+                <span className="text-slate-300 text-2xl">{el}</span>
+                <span className={`font-mono text-3xl ${color}`}>{c}</span>
               </li>
             )
           })}
@@ -117,22 +118,26 @@ export default function ExchangeVisualizer({ leftCounts, rightCounts, diffMap, m
 
   return (
     <section className="mt-6 card p-4 sm:p-6">
-      <div className="mb-3 flex items-center justify-between">
-        <h2 className="heading-display text-xl-strong bg-clip-text text-transparent bg-gradient-to-r from-brand-blue via-brand-cyan to-brand-purple">Physical Balance</h2>
-        <div className={"text-xs " + (isBalanced ? 'text-green-400' : 'text-red-400')}>
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="heading-display text-2xl-strong bg-clip-text text-transparent bg-gradient-to-r from-brand-blue via-brand-cyan to-brand-purple">Physical Balance</h2>
+        <div className={"text-2xl " + (isBalanced ? 'text-green-400' : 'text-red-400')}>
           {isBalanced ? 'Balanced (EQUIVALENT)' : 'Not Balanced'}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <CountList title="Left (Input)" counts={lhsObj} diff={diffMap} side="lhs" />
-        <CountList title="Right (Output)" counts={rhsObj} diff={diffMap} side="rhs" />
+      {/* Balance on top */}
+      <div className="mb-6">
+        <BalanceScale leftCounts={lhsObj} rightCounts={rhsObj} />
       </div>
 
-      <PhysicalBalance leftCounts={lhsObj} rightCounts={rhsObj} />
+      {/* Balancing table below with much larger fonts */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <CountList title="Reactants (Left)" counts={lhsObj} diff={diffMap} side="lhs" />
+        <CountList title="Products (Right)" counts={rhsObj} diff={diffMap} side="rhs" />
+      </div>
 
       {(missing.length > 0 || extra.length > 0) && (
-        <div className="mt-4 text-sm text-slate-300">
+        <div className="mt-4 text-2xl text-slate-300">
           <span className="text-slate-400">Status: </span>
           {missing.length === 0 && extra.length === 0 ? (
             <span className="text-green-400">EQUIVALENT</span>

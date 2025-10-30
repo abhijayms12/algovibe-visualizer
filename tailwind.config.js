@@ -11,8 +11,8 @@ export default {
         display: ["Poppins", "Inter", "ui-sans-serif", "system-ui"],
       },
       colors: {
-        background: "#0b1020",
-        surface: "#0f1425",
+        background: "#050c1a", // darker subtle blue
+        surface: "#0a1222",
         brand: {
           cyan: "#22d3ee",
           purple: "#a78bfa",
