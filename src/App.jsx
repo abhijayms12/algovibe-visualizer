@@ -1,111 +1,61 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import Navbar from './components/Navbar.jsx'
 import Footer from './components/Footer.jsx'
-import ControlPanel from './components/ControlPanel.jsx'
-import VisualizationCanvas from './components/VisualizationCanvas.jsx'
-import { generateArray } from './utils/generateData.js'
-import { sleep } from './utils/sleep.js'
-import sampleData from './data/sampleData.js'
-import templateAlgo from './algorithms/template.js'
-
-const algorithms = [templateAlgo]
-
-const speedToMs = (s) => Math.max(10, 1000 - s * 9) // 1..100 => 991..10ms
+import EquationInput from './components/EquationInput.jsx'
+import ExchangeVisualizer from './components/ExchangeVisualizer.jsx'
+import { parseFormula, compareMaps, evaluateLine } from './algorithms/main.js'
 
 export default function App() {
-  const [data, setData] = useState(sampleData)
-  const [highlight, setHighlight] = useState([])
-  const [selectedAlgo, setSelectedAlgo] = useState(algorithms[0].id)
-  const [speed, setSpeed] = useState(60)
-  const [isRunning, setIsRunning] = useState(false)
+  const [equation, setEquation] = useState('H2,O -> H2O')
+  const [error, setError] = useState('')
+  const [result, setResult] = useState({
+    left: {},
+    right: {},
+    diff: {},
+    missing: [],
+    extra: [],
+    status: 'EQUIVALENT',
+  })
 
-  const initialDataRef = useRef([...sampleData])
-  const cancelRef = useRef(false)
-
-  // Recompute max value for scaling visual height
-  const maxValue = useMemo(() => (data.length ? Math.max(...data) : 1), [data])
-
-  const handleGenerate = () => {
-    cancelRef.current = true
-    const next = generateArray(20, 8, 120)
-    initialDataRef.current = [...next]
-    setHighlight([])
-    setData(next)
-    setIsRunning(false)
-  }
-
-  const handleReset = () => {
-    cancelRef.current = true
-    setHighlight([])
-    setData([...initialDataRef.current])
-    setIsRunning(false)
-  }
-
-  const handleStart = async () => {
-    if (isRunning) return
-    const algo = algorithms.find((a) => a.id === selectedAlgo)
-    if (!algo) return
-
-    setIsRunning(true)
-    cancelRef.current = false
-
-    const steps = algo.getSteps([...data])
-
-    for (let i = 0; i < steps.length; i++) {
-      if (cancelRef.current) break
-      const step = steps[i]
-      switch (step.type) {
-        case 'highlight': {
-          setHighlight(step.indices || [])
-          break
-        }
-        case 'unhighlight': {
-          setHighlight([])
-          break
-        }
-        case 'set': {
-          setData((prev) => {
-            const next = [...prev]
-            if (step.index >= 0 && step.index < next.length) {
-              next[step.index] = step.value
-            }
-            return next
-          })
-          break
-        }
-        case 'swap': {
-          setData((prev) => {
-            const next = [...prev]
-            const { i, j } = step
-            if (
-              i >= 0 && i < next.length &&
-              j >= 0 && j < next.length
-            ) {
-              ;[next[i], next[j]] = [next[j], next[i]]
-            }
-            return next
-          })
-          break
-        }
-        case 'compare': {
-          setHighlight([step.i, step.j])
-          break
-        }
-        default:
-          break
+  const handleCompute = () => {
+    try {
+      setError('')
+      const normalized = String(equation || '')
+      const parts = normalized.split('->')
+      if (parts.length !== 2) {
+        setError('Malformed input. Expected: LHS -> RHS')
+        return
       }
-      await sleep(speedToMs(speed))
-    }
+      const leftStr = parts[0]
+      const rightStr = parts[1]
+      const l = parseFormula(leftStr).counts
+      const r = parseFormula(rightStr).counts
+      const statusMsg = compareMaps(l, r)
 
-    setHighlight([])
-    setIsRunning(false)
+      const all = new Set([...l.keys(), ...r.keys()])
+      const diff = {}
+      for (const k of all) {
+        diff[k] = (r.get(k) || 0) - (l.get(k) || 0)
+      }
+      const missing = Object.keys(diff).filter((k) => diff[k] > 0)
+      const extra = Object.keys(diff).filter((k) => diff[k] < 0)
+
+      setResult({
+        left: Object.fromEntries(Array.from(l.entries())),
+        right: Object.fromEntries(Array.from(r.entries())),
+        diff,
+        missing,
+        extra,
+        status: statusMsg,
+      })
+    } catch (e) {
+      setError('Failed to parse equation')
+    }
   }
 
-  // Keep initialDataRef synced to current data on first load
-  useEffect(() => {
-    if (!initialDataRef.current?.length) {
-      initialDataRef.current = [...data]
-    }
+  // Compute once on first render for the default example
+  useMemo(() => {
+    handleCompute()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -114,22 +64,19 @@ export default function App() {
       <Navbar />
 
       <main className="flex-1 mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
-        <ControlPanel
-          algorithms={algorithms}
-          selectedAlgo={selectedAlgo}
-          onSelectAlgo={setSelectedAlgo}
-          onGenerate={handleGenerate}
-          onStart={handleStart}
-          onReset={handleReset}
-          speed={speed}
-          onSpeedChange={setSpeed}
-          isRunning={isRunning}
+        <EquationInput
+          value={equation}
+          onChange={setEquation}
+          onSubmit={handleCompute}
+          error={error}
         />
 
-        <VisualizationCanvas
-          data={data}
-          highlightIndices={highlight}
-          maxValue={maxValue}
+        <ExchangeVisualizer
+          leftCounts={result.left}
+          rightCounts={result.right}
+          diffMap={result.diff}
+          missing={result.missing}
+          extra={result.extra}
         />
       </main>
 
