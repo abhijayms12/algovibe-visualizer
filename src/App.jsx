@@ -1,11 +1,15 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import Navbar from './components/Navbar.jsx'
 import Footer from './components/Footer.jsx'
 import EquationInput from './components/EquationInput.jsx'
 import ExchangeVisualizer from './components/ExchangeVisualizer.jsx'
+import Landing from './components/Landing.jsx'
 import { parseFormula, compareMaps, evaluateLine } from './algorithms/main.js'
 
 export default function App() {
+  const [entered, setEntered] = useState(() => {
+    try { return localStorage.getItem('alchemicode:entered') === '1' } catch { return false }
+  })
   const [equation, setEquation] = useState('H2,O -> H2O')
   const [error, setError] = useState('')
   const [result, setResult] = useState({
@@ -59,28 +63,42 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  useEffect(() => {
+    if (entered) {
+      try { localStorage.setItem('alchemicode:entered', '1') } catch {}
+    }
+  }, [entered])
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <Navbar />
-
-      <main className="flex-1 mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
-        <EquationInput
-          value={equation}
-          onChange={setEquation}
-          onSubmit={handleCompute}
-          error={error}
-        />
-
-        <ExchangeVisualizer
-          leftCounts={result.left}
-          rightCounts={result.right}
-          diffMap={result.diff}
-          missing={result.missing}
-          extra={result.extra}
-        />
-      </main>
-
-      <Footer />
+      {entered ? (
+        <>
+          <Navbar />
+          <main className="flex-1 mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 relative chemistry-bg chemistry-overlay">
+            <div className="relative z-10 py-4">
+              <div className="mb-4">
+                <h2 className="heading-display text-2xl-strong bg-clip-text text-transparent bg-gradient-to-r from-brand-cyan via-brand-purple to-brand-pink">AlchemiCode</h2>
+              </div>
+              <EquationInput
+                value={equation}
+                onChange={setEquation}
+                onSubmit={handleCompute}
+                error={error}
+              />
+              <ExchangeVisualizer
+                leftCounts={result.left}
+                rightCounts={result.right}
+                diffMap={result.diff}
+                missing={result.missing}
+                extra={result.extra}
+              />
+            </div>
+          </main>
+          <Footer />
+        </>
+      ) : (
+        <Landing onEnter={() => setEntered(true)} />
+      )}
     </div>
   )
 }
