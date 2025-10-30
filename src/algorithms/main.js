@@ -14,11 +14,9 @@
 // NOT_EQUIVALENT: Missing Fe
 // EQUIVALENT
 
-const fs = require('fs');
-
 // parseFormula: recursively parse formula string s starting at index i.
 // Returns an object { counts: Map, pos: nextIndex }
-function parseFormula(s, i = 0) {
+export function parseFormula(s, i = 0) {
   const n = s.length;
   const counts = new Map();
 
@@ -67,7 +65,7 @@ function parseFormula(s, i = 0) {
 
 // compareMaps: compare left -> right element counts
 // returns the required output string per problem statement
-function compareMaps(leftMap, rightMap) {
+export function compareMaps(leftMap, rightMap) {
   const missing = [];
   const extra = [];
 
@@ -94,35 +92,66 @@ function compareMaps(leftMap, rightMap) {
   return msg;
 }
 
-// Main: read input, robustly strip headers like 'INPUT'/'OUTPUT' if present
-function main() {
-  const raw = fs.readFileSync(0, 'utf8');
-  if (!raw) return;
-  const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(l => l.length && l !== 'INPUT' && l !== 'OUTPUT');
-  if (lines.length === 0) return;
-
-  const N = parseInt(lines[0], 10);
-  if (isNaN(N)) return;
-
-  const outputs = [];
-  for (let idx = 1; idx <= N && idx < lines.length; idx++) {
-    const rawLine = lines[idx];
-    const line = rawLine.replace(/\s+/g, ''); // remove spaces
-    const parts = line.split('->');
-    if (parts.length !== 2) {
-      outputs.push('NOT_EQUIVALENT: Malformed');
-      continue;
-    }
-    const leftStr = parts[0];
-    const rightStr = parts[1];
-
-    const leftRes = parseFormula(leftStr);
-    const rightRes = parseFormula(rightStr);
-
-    outputs.push(compareMaps(leftRes.counts, rightRes.counts));
-  }
-
-  console.log(outputs.join('\n'));
+// Helper: process a single line "LEFT -> RIGHT" and return result string
+export function evaluateLine(inputLine) {
+  const line = String(inputLine || '').replace(/\s+/g, '');
+  const parts = line.split('->');
+  if (parts.length !== 2) return 'NOT_EQUIVALENT: Malformed';
+  const leftRes = parseFormula(parts[0]);
+  const rightRes = parseFormula(parts[1]);
+  return compareMaps(leftRes.counts, rightRes.counts);
 }
 
-main();
+// Node CLI entry: read stdin and print results. Only runs in Node environments.
+async function runCliIfNode() {
+  const isNode = typeof process !== 'undefined' && typeof window === 'undefined';
+  if (!isNode) return;
+  try {
+    const { readFileSync } = await import('node:fs');
+    const raw = readFileSync(0, 'utf8');
+    if (!raw) return;
+    const lines = raw
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter((l) => l.length && l !== 'INPUT' && l !== 'OUTPUT');
+    if (lines.length === 0) return;
+
+    const N = parseInt(lines[0], 10);
+    if (isNaN(N)) return;
+
+    const outputs = [];
+    for (let idx = 1; idx <= N && idx < lines.length; idx++) {
+      outputs.push(evaluateLine(lines[idx]));
+    }
+    // eslint-disable-next-line no-console
+    console.log(outputs.join('\n'));
+  } catch (_) {
+    // ignore in browser/build
+  }
+}
+
+runCliIfNode();
+
+// Default export: a visualization-friendly algorithm object so App.jsx can consume it.
+// This does NOT modify or replace the DSA above; it's an additive wrapper for the UI.
+const visualAlgo = {
+  id: 'equivalent-exchange-demo',
+  name: 'Equivalent Exchange (Demo)',
+  /**
+   * Produce harmless visualization steps over the numeric array.
+   * We only emit 'compare' highlights to demonstrate the UI without changing data.
+   */
+  getSteps(arr) {
+    const n = Array.isArray(arr) ? arr.length : 0;
+    const steps = [];
+    if (n <= 1) return steps;
+    for (let i = 0; i < n - 1; i++) {
+      for (let j = 0; j < n - 1 - i; j++) {
+        steps.push({ type: 'compare', i: j, j: j + 1 });
+      }
+    }
+    return steps;
+  },
+};
+
+export default visualAlgo;
