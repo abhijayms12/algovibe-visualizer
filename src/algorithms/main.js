@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // Fullmetal Alchemist: Equivalent Exchange Formula Builder
 // Single-file solution. Reads N formulas in the form "INPUT -> OUTPUT" and
 // prints EQUIVALENT or NOT_EQUIVALENT with Missing/Extra element lists.
